@@ -23,48 +23,48 @@ def main():
     ssh_username = config.get("options", "ssh_username")
     nodes = dict(config.items('nodes'))
 
-    display_status(status(nodes))
+    display_status()
 
-def status(nodes):
+def get_status(ip):
     """
     Checks maintenance mode status of the hosts
     """
-    retr = {}
-    for hostname, ip in nodes.iteritems():
-        host_status = "N/A"
+    try:
+        sshclient = paramiko.SSHClient()
+        sshclient.load_system_host_keys()
+        sshclient.set_missing_host_key_policy(paramiko.WarningPolicy())
+        sshclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        sshclient.connect(
+        ip.partition(':')[0],
+        port=int(ip.partition(':')[2]),
+        username=ssh_username)
+        sftp = sshclient.open_sftp()
         try:
-            sshclient = paramiko.SSHClient()
-            sshclient.load_system_host_keys()
-            sshclient.set_missing_host_key_policy(paramiko.WarningPolicy())
-            sshclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            sshclient.connect(
-            ip.partition(':')[0],
-            port=int(ip.partition(':')[2]),
-            username=ssh_username)
-            sftp = sshclient.open_sftp()
-            try:
-                sftp.stat(maintenance_page_path)
-                retr[hostname] = True
-            except IOError:
-                retr[hostname] = False
-        finally:
-            sshclient.close()
-
-    return retr
+            sftp.stat(maintenance_page_path)
+            return True
+        except IOError:
+            return False
+    finally:
+        sshclient.close()
 
 
-def display_status(nodes_status):
+def display_status(node=None):
     """
     Displays the maintenance mode status of the nodes
     """
 
-    for hostname, status in nodes_status.iteritems():
-        if status == True:
-            print "Status of " + hostname + " : \t" + "[\x1B[31;40m Enabled  \x1B[0m]"
-        else:
-            print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled  \x1B[0m]"
+    if node in locals():
+        print "foo"
+    else:
+        # nodes_status = get_status(nodes)
+        for hostname, ip in nodes.iteritems():
+            node_status = get_status(ip)
+            if node_status == True:
+                print "Status of " + hostname + " : \t" + "[\x1B[31;40m Enabled  \x1B[0m]"
+            else:
+                print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled  \x1B[0m]"
 
-def change(nodes, ssh_username):
+def change(nodes):
     """
     Checks maintenance mode status of the hosts
     """
