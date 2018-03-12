@@ -5,10 +5,12 @@ import argparse
 from argparse_color_formatter import ColorHelpFormatter
 import ConfigParser
 
+
 def main():
     """
     Nginx maintenance mode manager
     """
+    global ssh_username, maintenance_page_path, nodes
     config = ConfigParser.ConfigParser()
 
     if os.path.isfile("/etc/nginx-maintenance-admin.conf"):
@@ -18,16 +20,15 @@ def main():
         config.readfp(open(conf_file))
 
     maintenance_page_path = config.get("options", "maintenance_page_path")
-    global ssh_username = config.get("options", "ssh_username")
+    ssh_username = config.get("options", "ssh_username")
     nodes = dict(config.items('nodes'))
 
-    display_status(status(nodes, ssh_username, maintenance_page_path))
+    display_status(status(nodes))
 
-def status(nodes, maintenance_page_path):
+def status(nodes):
     """
     Checks maintenance mode status of the hosts
     """
-
     retr = {}
     for hostname, ip in nodes.iteritems():
         host_status = "N/A"
@@ -43,17 +44,12 @@ def status(nodes, maintenance_page_path):
             sftp = sshclient.open_sftp()
             try:
                 sftp.stat(maintenance_page_path)
-                # host_status = "[\x1B[31;40m Enabled  \x1B[0m]"
                 retr[hostname] = True
             except IOError:
-                # host_status = "[\x1B[32;40m Disabled \x1B[0m]"
                 retr[hostname] = False
         finally:
             sshclient.close()
 
-        # print "Status of " + hostname + " ( " + ip.partition(":")[0] + " ):\t " + host_status
-    # for i in retr:
-        # print i, retr[i]
     return retr
 
 
