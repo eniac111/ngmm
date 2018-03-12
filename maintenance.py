@@ -5,8 +5,6 @@ import argparse
 from argparse_color_formatter import ColorHelpFormatter
 import ConfigParser
 
-# ssh_username = ""
-
 def main():
     """
     Nginx maintenance mode manager
@@ -23,9 +21,7 @@ def main():
     ssh_username = config.get("options", "ssh_username")
     nodes = dict(config.items('nodes'))
 
-    # print(hosts)
-
-    status(nodes, ssh_username, maintenance_page_path)
+    display_status(status(nodes, ssh_username, maintenance_page_path))
 
 def status(nodes, ssh_username, maintenance_page_path):
     """
@@ -47,17 +43,18 @@ def status(nodes, ssh_username, maintenance_page_path):
             sftp = sshclient.open_sftp()
             try:
                 sftp.stat(maintenance_page_path)
-                host_status = "[\x1B[31;40m Enabled  \x1B[0m]"
+                # host_status = "[\x1B[31;40m Enabled  \x1B[0m]"
                 retr[hostname] = True
             except IOError:
-                host_status = "[\x1B[32;40m Disabled \x1B[0m]"
+                # host_status = "[\x1B[32;40m Disabled \x1B[0m]"
                 retr[hostname] = False
         finally:
             sshclient.close()
 
-        print "Status of " + hostname + " ( " + ip.partition(":")[0] + " ):\t " + host_status
-    for i in retr:
-        print i, retr[i]
+        # print "Status of " + hostname + " ( " + ip.partition(":")[0] + " ):\t " + host_status
+    # for i in retr:
+        # print i, retr[i]
+    return retr
 
 
 def display_status(nodes_status):
@@ -65,9 +62,11 @@ def display_status(nodes_status):
     Displays the maintenance mode status of the nodes
     """
 
-    for hostname, status in nodes_status:
+    for hostname, status in nodes_status.iteritems():
         if status == True:
-            print "Status of " + hostname +
+            print "Status of " + hostname + " : \t" + "[\x1B[31;40m Enabled  \x1B[0m]"
+        else:
+            print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled  \x1B[0m]"
 
 def change(nodes, ssh_username):
     """
