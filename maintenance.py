@@ -9,7 +9,8 @@ def main():
     """
     Nginx maintenance mode manager
     """
-    global ssh_username, maintenance_page_path, nodes
+    global ssh_username, maintenance_page_path, nodes, nodes_arg
+    nodes_arg = {}
     config = ConfigParser.ConfigParser()
 
     if os.path.isfile("/etc/nginx-maintenance-admin.conf"):
@@ -23,9 +24,22 @@ def main():
     nodes = dict(config.items('nodes'))
 
     parser = argparse.ArgumentParser(prog='ngmm')
-    parser.add_argument("--node", nargs=1, help="Choose a node. Default = all")
+    parser.add_argument("--nodes", nargs="*", help="Choose a node. Default = all")
     parser.add_argument("command", nargs=1, help="Available commands: list, status")
     args = parser.parse_args()
+
+    print args
+
+    if args.nodes is not None:
+        for node_key in args.nodes:
+            if node_key in nodes:
+                nodes_arg[node_key] = nodes[node_key]
+            else:
+                print node_key + " is not in the configuration!"
+                sys.exit(1)
+
+    print nodes_arg
+
 
     if args.command == ["list"]:
         list_nodes()
