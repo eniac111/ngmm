@@ -18,12 +18,12 @@ def main():
         config.readfp(open(conf_file))
 
     maintenance_page_path = config.get("options", "maintenance_page_path")
-    ssh_username = config.get("options", "ssh_username")
+    global ssh_username = config.get("options", "ssh_username")
     nodes = dict(config.items('nodes'))
 
     display_status(status(nodes, ssh_username, maintenance_page_path))
 
-def status(nodes, ssh_username, maintenance_page_path):
+def status(nodes, maintenance_page_path):
     """
     Checks maintenance mode status of the hosts
     """
