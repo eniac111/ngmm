@@ -28,7 +28,6 @@ def main():
     parser.add_argument("command", nargs=1, help="Available commands: list, status")
     args = parser.parse_args()
 
-    print args
 
     if args.nodes is not None:
         for node_key in args.nodes:
@@ -38,13 +37,12 @@ def main():
                 print node_key + " is not in the configuration!"
                 sys.exit(1)
 
-    print nodes_arg
-
-
     if args.command == ["list"]:
         list_nodes()
     elif args.command == ["status"]:
-        display_status()
+        if bool(nodes_arg):
+            display_status(nodes_arg)
+        else: display_status(nodes)
     else: parser.print_help()
 
 def get_status(ip):
@@ -70,20 +68,16 @@ def get_status(ip):
         sshclient.close()
 
 
-def display_status(node=None):
+def display_status(node):
     """
     Displays the maintenance mode status of the nodes
     """
-
-    if node in locals():
-        print "foo"
-    else:
-        for hostname, ip in nodes.iteritems():
-            node_status = get_status(ip)
-            if node_status == True:
-                print "Status of " + hostname + " : \t" + "[\x1B[31;40m Enabled  \x1B[0m]"
-            else:
-                print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled \x1B[0m]"
+    for hostname, ip in node.iteritems():
+        node_status = get_status(ip)
+        if node_status == True:
+            print "Status of " + hostname + " : \t" + "[\x1B[32;40m Enabled  \x1B[0m]"
+        else:
+            print "Status of " + hostname + " : \t" + "[\x1B[31;40m Disabled \x1B[0m]"
 
 def list_nodes():
     """
