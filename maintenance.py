@@ -2,7 +2,6 @@
 
 import sys, os, paramiko
 import argparse
-from argparse_color_formatter import ColorHelpFormatter
 import ConfigParser
 
 
@@ -23,7 +22,16 @@ def main():
     ssh_username = config.get("options", "ssh_username")
     nodes = dict(config.items('nodes'))
 
-    display_status()
+    parser = argparse.ArgumentParser(prog='ngmm')
+    parser.add_argument("--node", nargs=1, help="Choose a node. Default = all")
+    parser.add_argument("command", nargs=1, help="Available commands: list, status")
+    args = parser.parse_args()
+
+    if args.command == ["list"]:
+        list_nodes()
+    elif args.command == ["status"]:
+        display_status()
+    else: parser.print_help()
 
 def get_status(ip):
     """
@@ -56,13 +64,19 @@ def display_status(node=None):
     if node in locals():
         print "foo"
     else:
-        # nodes_status = get_status(nodes)
         for hostname, ip in nodes.iteritems():
             node_status = get_status(ip)
             if node_status == True:
                 print "Status of " + hostname + " : \t" + "[\x1B[31;40m Enabled  \x1B[0m]"
             else:
-                print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled  \x1B[0m]"
+                print "Status of " + hostname + " : \t" + "[\x1B[32;40m Disabled \x1B[0m]"
+
+def list_nodes():
+    """
+    Lists all nodes from the configuration
+    """
+    for hostname, ip in nodes.iteritems():
+        print hostname + "\t" + ip
 
 def change(nodes):
     """
