@@ -1,0 +1,2 @@
+paramiko==1.16.0
+argparse_color_formatter==1.2.0
