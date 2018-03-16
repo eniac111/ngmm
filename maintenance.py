@@ -25,7 +25,7 @@ def main():
 
     parser = argparse.ArgumentParser(prog='ngmm')
     parser.add_argument("--nodes", nargs="*", help="Choose a node. Default = all")
-    parser.add_argument("command", nargs=1, help="Available commands: list, status")
+    parser.add_argument("command", nargs=1, help="Available commands: list, status, enable, disable")
     args = parser.parse_args()
 
 
@@ -37,12 +37,19 @@ def main():
                 print node_key + " is not in the configuration!"
                 sys.exit(1)
 
+    if bool(nodes_arg):
+        nodes_actual = nodes_arg
+    else:
+        nodes_actual = nodes
+
     if args.command == ["list"]:
         list_nodes()
     elif args.command == ["status"]:
-        if bool(nodes_arg):
-            display_status(nodes_arg)
-        else: display_status(nodes)
+            display_status(nodes_actual)
+    elif args.command == ["enable"]:
+        change_status(nodes_actual, "enable")
+    elif args.command == ["disable"]:
+        change_status(nodes_actual,"disable")
     else: parser.print_help()
 
 def get_status(ip):
@@ -86,12 +93,17 @@ def list_nodes():
     for hostname, ip in nodes.iteritems():
         print hostname + "\t" + ip
 
-def change(nodes):
+def change_status(node, action):
     """
     Checks maintenance mode status of the hosts
     """
 
-    for hostname, ip in nodes.iteritems():
+    for hostname, ip in node.iteritems():
+        node_status = get_status(ip)
+        if node_status == True:
+            change_cmd = "mv " + maintenance_page_path + " " + maintenance_page_path + ".DISABLED"
+        else:
+            change_cmd = "mv" + maintenance_page_path + ".DISABLED " + maintenance_page_path
         try:
             sshclient = paramiko.SSHClient()
             sshclient.load_system_host_keys()
@@ -102,7 +114,7 @@ def change(nodes):
             port=int(ip.partition(':')[2]),
             username=ssh_username)
 
-            stdin, stdout, stderr = sshclient.exec_command("touch /tmp/foo")
+            stdin, stdout, stderr = sshclient.exec_command(change_cmd)
             print stdout.read()
         finally:
             sshclient.close()
