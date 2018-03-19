@@ -13,10 +13,10 @@ def main():
     nodes_arg = {}
     config = ConfigParser.ConfigParser()
 
-    if os.path.isfile("/etc/nginx-maintenance-admin.conf"):
-        conf_file = "/etc/nginx-maintenance-admin.conf"
+    if os.path.isfile("/etc/ngmm.conf"):
+        conf_file = "/etc/ngmm.conf"
     else:
-        conf_file = os.getcwd() + "/nginx-maintenance-admin.conf"
+        conf_file = os.getcwd() + "/ngmm.conf"
         config.readfp(open(conf_file))
 
     maintenance_page_path = config.get("options", "maintenance_page_path")

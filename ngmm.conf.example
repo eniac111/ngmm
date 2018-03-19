@@ -3,9 +3,9 @@
 [options]
 maintenance_page_path = /var/www/under-construction.html
 log_file = ~/.config/
-ssh_username = blago
+ssh_username = john
 
 [nodes]
-node1 = 10.10.58.54:22
-node2 = 10.10.58.33:22
-node3 = 10.10.58.216:22
+node1 = 10.10.10.1:22
+node2 = 10.10.10.2:22
+node3 = 10.10.10.3:22
