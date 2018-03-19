@@ -99,11 +99,23 @@ def change_status(node, action):
     """
 
     for hostname, ip in node.iteritems():
+        change_cmd = ""
+        state_msg = ""
         node_status = get_status(ip)
-        if node_status == True:
+        # if node_status == True:
+        #     change_cmd = "mv " + maintenance_page_path + " " + maintenance_page_path + ".DISABLED"
+        # else:
+        #     change_cmd = "mv" + maintenance_page_path + ".DISABLED " + maintenance_page_path
+        if action == "enable" and node_status == False:
+            state_msg = "Enabled"
+            change_cmd = "mv " + maintenance_page_path + ".DISABLED " + maintenance_page_path
+        elif action == "disable" and node_status == True:
+            state_msg = "Disabled"
             change_cmd = "mv " + maintenance_page_path + " " + maintenance_page_path + ".DISABLED"
         else:
-            change_cmd = "mv" + maintenance_page_path + ".DISABLED " + maintenance_page_path
+            state_msg = "Unchanged"
+            change_cmd = "echo 1 > /dev/null"
+
         try:
             sshclient = paramiko.SSHClient()
             sshclient.load_system_host_keys()
@@ -119,7 +131,7 @@ def change_status(node, action):
         finally:
             sshclient.close()
 
-        print "Status of " + hostname + " ( " + ip.partition(":")[0] + " ):\t Ok"
+        print "Maintenance state of " + hostname + " ( " + ip.partition(":")[0] + " ):\t" + state_msg
 
 if __name__ == "__main__":
     main()
